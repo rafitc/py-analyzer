@@ -1,7 +1,8 @@
 import ast
 from pathlib import Path
+from typing import List
 
-class PandasOptimizer(ast.NodeVisitor):
+class PandasOptimizer():
     # list all allowd data read methods of pandas
     data_read_methods = ['read_csv', 'read_table', 'read_json', 'read_excel', 'read_sql', 'read_parquet', 'read_feather', \
                          'read_hdf', 'read_fwf', 'read_gbq', 'read_stata', 'read_sas', 'read_spss', 'read_orc']
@@ -12,23 +13,24 @@ class PandasOptimizer(ast.NodeVisitor):
         # Read full code as string
         code_as_text = Path(module_path).read_text()
         self.tree = ast.parse(code_as_text)
+
+        self.suggestions = []
     
-    def give_suggestion(self, node:ast.Attribute, msg:str):
-        # for now, just using classical `print` statement. 
-        # this can be easily abstracted how ever we wanted, example loggers
-        print(f"Suggestion in file: {self.file_name} | line no: {node.lineno} | {msg}")
+    def give_suggestion(self, node:ast.Attribute, msg:str) -> None:
+        # this can be easily abstracted how ever we wanted based on the message
+        message = f"Suggestion in file: {self.file_name} | line no: {node.lineno} | {msg}"
+        self.suggestions.append(message)
     
-    def check_import(self):
+    def check_import(self) -> None:
         # its better to import pandas with namespace pd `import pandas as pd`
         for node in ast.walk(self.tree):
             if isinstance(node, ast.Import):
                 # Check is this related to pandas 
                 for each_name in node.names:
-                    if 'pandas' in each_name.name:
-                        if each_name.asname != 'pd':
-                            self.give_suggestion(node, "Use `pd` as namespace for python. eg: import pandas as pd")
+                    if 'pandas' in each_name.name and each_name.asname != 'pd':
+                        self.give_suggestion(node, "Use `pd` as namespace for python. eg: import pandas as pd")
     
-    def check_data_read(self):
+    def check_data_read(self) -> None:
         # use given methods to 
         for node in ast.walk(self.tree):
             if isinstance(node, ast.Assign) and (node.value.func.attr in self.data_read_methods):
@@ -43,16 +45,7 @@ class PandasOptimizer(ast.NodeVisitor):
                 if 'usecols' not in [i.arg for i in node.value.keywords]:
                     self.give_suggestion(node, "Load only necessary columns using the `usecols` parameter if you're dealing with large datasets and only need specific columns.")
 
-    
-    
-    def check_dataframe_variable_name(self):
-        # check df at the end for all
-        for node in ast.walk(self.tree):
-            if isinstance(node, ast.Name):
-                print("yes")
-        pass
-
-    def check_iter(self):
+    def check_iter(self) -> None:
         for node in ast.walk(self.tree):
             # check for for loop
             if isinstance(node, ast.For):
@@ -65,7 +58,7 @@ class PandasOptimizer(ast.NodeVisitor):
                     if node.iter.func.attr == 'itertuples':
                         self.give_suggestion(node, "Try to use vectorization if possible instead of itertuples() else use apply()")
     
-    def merge_statement(self):
+    def merge_statement(self) -> None:
         for node in ast.walk(self.tree):
             if isinstance(node, ast.Assign):
                 if node.value.func.attr == 'merge':
@@ -75,11 +68,14 @@ class PandasOptimizer(ast.NodeVisitor):
                     
                     if 'how' not in [i.arg for i in node.value.keywords]:
                         self.give_suggestion(node, "Use merge() with the `how` parameter instead of default value for better readability")
-
-    def run(self):
+        
+    def run(self) -> List[str]:
         self.check_data_read()
         self.check_import()
         self.check_iter()
         self.merge_statement()
+
+        # Return all collected suggestions
+        return self.suggestions
 
 

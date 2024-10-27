@@ -1,7 +1,7 @@
+from pyanalyzer.analyze import PandasOptimizer
+
 import sys
 import os
-
-from pyanalyzer.analyze import PandasOptimizer
 
 def main():
 
@@ -12,6 +12,7 @@ def main():
     
     project_path = sys.argv[1]
     print("Got project path ", project_path)
+    all_suggestions = []
 
     # then look for python modules in all hierarchy structure
     # for example just take main.py 
@@ -21,7 +22,12 @@ def main():
             if file.endswith(".py"):
                 file_path = os.path.join(root, file)
                 check = PandasOptimizer(file_path, file)
-                check.run()
+                result = check.run()
+                all_suggestions.extend(result)
+
+    # For now using classical print statement, this can be abstracted easily
+    for each_suggestion in all_suggestions:
+        print(each_suggestion)
 
 if __name__ == '__main__':
     main()
