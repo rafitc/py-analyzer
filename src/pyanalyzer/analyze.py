@@ -7,7 +7,8 @@ class PandasOptimizer():
     data_read_methods = ['read_csv', 'read_table', 'read_json', 'read_excel', 'read_sql', 'read_parquet', 'read_feather', \
                          'read_hdf', 'read_fwf', 'read_gbq', 'read_stata', 'read_sas', 'read_spss', 'read_orc']
 
-    def __init__(self, module_path:str, file_name:str) -> None:
+    def __init__(self, module_path:str="", file_name:str="") -> None:
+        
         self.module_path = module_path
         self.file_name = file_name
         # Read full code as string
