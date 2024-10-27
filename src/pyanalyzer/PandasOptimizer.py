@@ -7,20 +7,31 @@ class PandasOptimizer():
     data_read_methods = ['read_csv', 'read_table', 'read_json', 'read_excel', 'read_sql', 'read_parquet', 'read_feather', \
                          'read_hdf', 'read_fwf', 'read_gbq', 'read_stata', 'read_sas', 'read_spss', 'read_orc']
 
-    def __init__(self, module_path:str="", file_name:str="") -> None:
-        
-        self.module_path = module_path
-        self.file_name = file_name
-        # Read full code as string
-        code_as_text = Path(module_path).read_text()
-        self.tree = ast.parse(code_as_text)
+    def __init__(self, module_path:str="", file_name:str="", is_file_path=True, code="") -> None:
+        self.is_file_path = is_file_path
+        # If the code is a file path, analyzer read entire file and convert into string
+        if is_file_path:
+            self.module_path = module_path
+            self.file_name = file_name
+            # Read full code as string
+            code_as_text = Path(module_path).read_text()
 
+        else: # if its not a filepath. then linter is expecting a valid python code in string format.
+            code_as_text = code
+
+        self.tree = ast.parse(code_as_text)
         self.suggestions = []
     
     def give_suggestion(self, node:ast.Attribute, msg:str) -> None:
         # this can be easily abstracted how ever we wanted based on the message
-        message = f"Suggestion in file: {self.file_name} | line no: {node.lineno} | {msg}"
-        self.suggestions.append(message)
+        # If issue from file add file name as well, else. don't include file name
+        if self.is_file_path:
+            message = f"Suggestion in file: {self.file_name} | line no: {node.lineno} | {msg}"
+            self.suggestions.append(message)
+
+        else:
+            message = f"Suggestion in line no: {node.lineno} | {msg}"
+            self.suggestions.append(message)
     
     def check_import(self) -> None:
         # its better to import pandas with namespace pd `import pandas as pd`
@@ -28,8 +39,9 @@ class PandasOptimizer():
             if isinstance(node, ast.Import):
                 # Check is this related to pandas 
                 for each_name in node.names:
-                    if 'pandas' in each_name.name and each_name.asname != 'pd':
-                        self.give_suggestion(node, "Use `pd` as namespace for python. eg: import pandas as pd")
+                    if 'pandas' in each_name.name:
+                        if each_name.asname != 'pd':
+                            self.give_suggestion(node, "Use `pd` as namespace for python. eg: import pandas as pd")
     
     def check_data_read(self) -> None:
         # use given methods to 

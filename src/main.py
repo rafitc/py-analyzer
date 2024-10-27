@@ -1,4 +1,4 @@
-from pyanalyzer.analyze import PandasOptimizer
+from pyanalyzer.PandasOptimizer import PandasOptimizer
 
 import sys
 import os
@@ -32,5 +32,14 @@ def main():
     for each_suggestion in all_suggestions:
         print(each_suggestion)
 
+def main_str():
+    code  = """import pandas"""
+    check = PandasOptimizer(is_file_path=False, code=code)
+    result = check.run()
+    
+    for each_suggestion in result:
+        print(each_suggestion)
+    
 if __name__ == '__main__':
-    main()
+    # main()
+    main_str()
