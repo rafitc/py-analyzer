@@ -14,24 +14,37 @@ class PandasOptimizer():
             self.module_path = module_path
             self.file_name = file_name
             # Read full code as string
-            code_as_text = Path(module_path).read_text()
+            self.code_as_text = Path(module_path).read_text()
 
         else: # if its not a filepath. then linter is expecting a valid python code in string format.
-            code_as_text = code
+            self.code_as_text = code
 
-        self.tree = ast.parse(code_as_text)
         self.suggestions = []
-    
-    def give_suggestion(self, node:ast.Attribute, msg:str) -> None:
-        # this can be easily abstracted how ever we wanted based on the message
-        # If issue from file add file name as well, else. don't include file name
-        if self.is_file_path:
-            message = f"Suggestion in file: {self.file_name} | line no: {node.lineno} | {msg}"
-            self.suggestions.append(message)
 
+    def is_valid_python(self):
+        try:
+            self.tree = ast.parse(self.code_as_text)
+            return True
+        except SyntaxError:
+            self.give_suggestion(msg="There is a syntax error in your code. Analyzer is expecting valid python code")
+            return False
+    
+    def give_suggestion(self, node:ast.Attribute=None, msg:str="") -> None:
+        # this can be easily abstracted how ever we wanted based on the requirement 
+        # for now, just pushing into list.
+        # If issue from file add file name as well, else. don't include file name
+        if node != None:
+            if self.is_file_path:
+                message = f"file: {self.file_name} | line no: {node.lineno} | {msg}"
+                self.suggestions.append(message)
+
+            else:
+                message = f"line no: {node.lineno} | {msg}"
+                self.suggestions.append(message)
         else:
-            message = f"Suggestion in line no: {node.lineno} | {msg}"
-            self.suggestions.append(message)
+            if self.is_file_path:
+                msg = f"file: {self.file_name} | {msg}"
+            self.suggestions.append(msg)
     
     def check_import(self) -> None:
         # its better to import pandas with namespace pd `import pandas as pd`
@@ -46,7 +59,7 @@ class PandasOptimizer():
     def check_data_read(self) -> None:
         # use given methods to 
         for node in ast.walk(self.tree):
-            if isinstance(node, ast.Assign) and (node.value.func.attr in self.data_read_methods):
+            if isinstance(node, ast.Assign) and isinstance(node.value, ast.Call) and ('attr' in node.value.func._fields) and (node.value.func.attr in self.data_read_methods):
                 if 'dtype' not in [i.arg for i in node.value.keywords]:
                     self.give_suggestion(node, f"Use `dtype` with {node.value.func.attr} to reduce the memory usage.")
                 
@@ -73,7 +86,7 @@ class PandasOptimizer():
     
     def merge_statement(self) -> None:
         for node in ast.walk(self.tree):
-            if isinstance(node, ast.Assign):
+            if isinstance(node, ast.Assign) and isinstance(node.value, ast.Call) and ('attr' in node.value.func._fields):
                 if node.value.func.attr == 'merge':
                     # check for the keywords 
                     if 'on' not in [i.arg for i in node.value.keywords]:
@@ -83,10 +96,12 @@ class PandasOptimizer():
                         self.give_suggestion(node, "Use merge() with the `how` parameter instead of default value for better readability")
         
     def run(self) -> List[str]:
-        self.check_data_read()
-        self.check_import()
-        self.check_iter()
-        self.merge_statement()
+        
+        if self.is_valid_python():
+            self.check_data_read()
+            self.check_import()
+            self.check_iter()
+            self.merge_statement()
 
         # Return all collected suggestions
         return self.suggestions

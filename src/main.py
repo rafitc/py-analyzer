@@ -36,10 +36,10 @@ def main_str():
     code  = """import pandas"""
     check = PandasOptimizer(is_file_path=False, code=code)
     result = check.run()
-    
+
     for each_suggestion in result:
         print(each_suggestion)
     
 if __name__ == '__main__':
-    # main()
-    main_str()
+    main()
+    # main_str()
