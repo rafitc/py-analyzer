@@ -69,7 +69,7 @@ Py Analyzer helps you to optimize your data intensive code bases by following be
 
     ```
 
-### Rule 3: Merge check
+### Rule 4: Merge check
 
 - **Category**: Performance, Readability
 - **Description**: To reduce the memory usage and improve performance.
