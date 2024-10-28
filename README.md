@@ -1,10 +1,6 @@
-# Optimize your data science code base.
+# Py-Analyzer
 
-A code monitoring tool to help you optimize your data science-related source code.
-
-## Requirements
-
-- Python 3.11.3
+Optimize your data intensive operations
 
 # Problem
 
@@ -14,12 +10,35 @@ However, even with these optimizations, developers often write less efficient co
 
 **Py-Analyzer** is a tool designed to identify such inefficiencies in your code and provide better suggestions for optimization. Simply provide the path to your source code, and Py-Analyzer will offer recommendations to improve its performance.
 
-## Reference
+# Analyzer rules
 
-These are few good reference for you to follow best coding standard.
+[Refer Here](docs/README.md) for the rules and pattern
 
-- https://pandas.pydata.org/docs/user_guide/enhancingperf.html
-- https://medium.com/bigdatarepublic/advanced-pandas-optimize-speed-and-memory-a654b53be6c2
-- https://numpy.org/devdocs/user/basics.html
-- https://blog.paperspace.com/numpy-optimization-vectorization-and-broadcasting/
-- https://ryxcommar.com/2020/01/15/for-the-love-of-god-stop-using-iterrows/
+## Requirements
+
+- Python 3.11.3
+- numpy==2.1.2
+- pandas==2.2.3
+- python-dateutil==2.9.0.post0
+- pytz==2024.2
+- six==1.16.0
+- tzdata==2024.2
+
+## How to run the analyzer
+
+1. Clone the code `git clone https://github.com/rafitc/py-analyzer`
+2. Go to the project folder `cd py-analyzer`
+3. Create python virtual env with `python 3.11` as base
+4. Activate virtual env
+5. Install the dependencies `pip install -r requirements.txt`
+6. Run the analyzer by providing python project directory. `python src/main.py <PROVIDE-YOUR-PYTHON-PROJECT-DIRECTORY>`
+   1. Eg:- `python src/main.py test/test_files`
+
+## How to run the unit tests (for developers)
+
+1. Clone the code `git clone https://github.com/rafitc/py-analyzer`
+2. Go to the project folder `cd py-analyzer`
+3. Create python virtual env with `python 3.11` as base
+4. Activate virtual env
+5. Install the dependencies `pip install -r requirements.txt`
+6. Run the test suite along your code `python -m unittest test/test_analyzer.py`
