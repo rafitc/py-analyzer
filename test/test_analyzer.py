@@ -43,7 +43,7 @@ for row in df.iterrows():
         test_obj = PandasOptimizer(is_file_path=False, code=code)
         self.assertEqual(test_obj.run(), ['line no: 3 | Found loop with `iterrows()`. Replace iterrows() with itertuples() for better performance.'])
 
-    def test_pandas_invalid_loop(self):
+    def test_pandas_valid_loop(self):
             code = """import pandas as pd
 df = pd.read_csv("data.csv", dtype={'a': np.float64, 'b': np.int32, 'c': 'Int64'}, usecols=['a', 'b', 'c'], engine='pyarrrow')
 for row in df.itertuples():
@@ -58,7 +58,7 @@ df = pd.merge(df1, df2)"""
         self.assertEqual(test_obj.run(), ['line no: 2 | Use merge() with the `on` parameter instead of relying on join() for better performance',
                                           'line no: 2 | Use merge() with the `how` parameter instead of default value for better readability'])
         
-    def test_pandas_invalid_merge(self):
+    def test_pandas_valid_merge(self):
         code = """import pandas as pd
 df = pd.merge(df1, df2, how='left', left_on='col_1')"""
         test_obj = PandasOptimizer(is_file_path=False, code=code) 
