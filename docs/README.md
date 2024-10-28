@@ -6,11 +6,7 @@ Optimize your data intensive operations.
 
 ## Overview
 
-Provide a brief introduction to the linter and its purpose. Include details like the coding practices it enforces, the programming language it targets, and its importance in improving code quality.
-
-## General Guidelines
-
-Provide a section for general principles or coding standards that the linter aims to promote. Explain why following these practices is crucial for maintainable and efficient code.
+Py Analyzer helps you to optimize your data intensive code bases by following best practices.
 
 ## Rules
 
@@ -31,7 +27,7 @@ Provide a section for general principles or coding standards that the linter aim
 
 ### Rule 2: Data Read Check
 
-- **Category**: (e.g., Performance, Best Practice)
+- **Category**: Performance, Best Practice
 - **Description**: To reduce the memory usage.
 - **Why It's Important**: Using `usecols`, `dtype`, and `engine` in pandas read operations optimizes data loading by reducing memory usage and improving performance
 - **Example**:

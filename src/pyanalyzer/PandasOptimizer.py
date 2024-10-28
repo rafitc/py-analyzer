@@ -57,7 +57,7 @@ class PandasOptimizer():
                             self.give_suggestion(node, "Use `pd` as namespace for python. eg: import pandas as pd")
     
     def check_data_read(self) -> None:
-        # use given methods to 
+        # read keywords from data read ops
         for node in ast.walk(self.tree):
             if isinstance(node, ast.Assign) and isinstance(node.value, ast.Call):
                 if hasattr(node.value.func, 'attr') and (node.value.func.attr in self.data_read_methods):
@@ -80,7 +80,6 @@ class PandasOptimizer():
                 if isinstance(node.iter, ast.Call) and isinstance(node.iter.func, ast.Attribute):
                     if node.iter.func.attr == 'iterrows':
                         self.give_suggestion(node, "Found loop with `iterrows()`. Replace iterrows() with itertuples() for better performance.")
-                    # if itertuple is there, suggest to use apply or vectorization. 
                     # full vectorization is completely depends on the bussines logic. 
                     if node.iter.func.attr == 'itertuples':
                         self.give_suggestion(node, "Try to use vectorization if possible instead of itertuples() else use apply()")
@@ -98,7 +97,8 @@ class PandasOptimizer():
                             self.give_suggestion(node, "Use merge() with the `how` parameter instead of default value for better readability")
         
     def run(self) -> List[str]:
-        
+        # this are the methods, 
+        # TODO Modularize the code by building child class for each methods
         if self.is_valid_python():
             self.check_import()
             self.check_data_read()

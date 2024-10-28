@@ -42,3 +42,24 @@ However, even with these optimizations, developers often write less efficient co
 4. Activate virtual env
 5. Install the dependencies `pip install -r requirements.txt`
 6. Run the test suite along your code `python -m unittest test/test_analyzer.py`
+
+## Future tasks
+
+Currently the tool only support few operations from `pandas` library. Eventually this will support other data intensive libraries `numpy`, `matplotlib` `SciPy` etc.
+
+Code modularization is needed in `PandasOptimizer` as it grow, there will be many child classes each classes will take care each subcategory of rules.
+
+Logger implementation is pending
+
+# TODO
+
+- [x] Read files from given root directory
+- [x] Parse each files and check for valid python code base
+- [x] Support both file and direct code as input for the analyzer class
+- [x] Implement first rule check with test cases
+- [x] Implement multiple rule check with test cases
+- [x] Populate suggestions with line no and file name
+- [ ] Modularize the `PandasOptimizer` class methods into child classes
+- [ ] Implement controllable loggers
+- [ ] Finish all the rules of pandas
+- [ ] Write rules for other libraries like `numpy`, `SciPy` etc
