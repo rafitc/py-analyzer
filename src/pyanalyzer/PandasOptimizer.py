@@ -59,17 +59,18 @@ class PandasOptimizer():
     def check_data_read(self) -> None:
         # use given methods to 
         for node in ast.walk(self.tree):
-            if isinstance(node, ast.Assign) and isinstance(node.value, ast.Call) and ('attr' in node.value.func._fields) and (node.value.func.attr in self.data_read_methods):
-                if 'dtype' not in [i.arg for i in node.value.keywords]:
-                    self.give_suggestion(node, f"Use `dtype` with {node.value.func.attr} to reduce the memory usage.")
-                
-                if 'engine' not in [i.arg for i in node.value.keywords]:
-                    self.give_suggestion(node, f"""Consider using the `pyarrow` engine for faster performance and multithreading support.
-                                                While the `python` engine is more feature-complete, the pyarrow engine can significantly
-                                                improve performance, especially for large datasets. """)
+            if isinstance(node, ast.Assign) and isinstance(node.value, ast.Call):
+                if hasattr(node.value.func, 'attr') and (node.value.func.attr in self.data_read_methods):
+                    if 'dtype' not in [i.arg for i in node.value.keywords]:
+                        self.give_suggestion(node, f"Use `dtype` with {node.value.func.attr} to reduce the memory usage.")
                     
-                if 'usecols' not in [i.arg for i in node.value.keywords]:
-                    self.give_suggestion(node, "Load only necessary columns using the `usecols` parameter if you're dealing with large datasets and only need specific columns.")
+                    if 'engine' not in [i.arg for i in node.value.keywords]:
+                        self.give_suggestion(node, f"""Consider using the `pyarrow` engine for faster performance and multithreading support.
+                                                    While the `python` engine is more feature-complete, the pyarrow engine can significantly
+                                                    improve performance, especially for large datasets. """)
+                        
+                    if 'usecols' not in [i.arg for i in node.value.keywords]:
+                        self.give_suggestion(node, "Load only necessary columns using the `usecols` parameter if you're dealing with large datasets and only need specific columns.")
 
     def check_iter(self) -> None:
         for node in ast.walk(self.tree):
@@ -86,20 +87,21 @@ class PandasOptimizer():
     
     def merge_statement(self) -> None:
         for node in ast.walk(self.tree):
-            if isinstance(node, ast.Assign) and isinstance(node.value, ast.Call) and ('attr' in node.value.func._fields):
-                if node.value.func.attr == 'merge':
-                    # check for the keywords 
-                    if 'on' not in [i.arg for i in node.value.keywords]:
-                        self.give_suggestion(node, "Use merge() with the `on` parameter instead of relying on join() for better performance")
-                    
-                    if 'how' not in [i.arg for i in node.value.keywords]:
-                        self.give_suggestion(node, "Use merge() with the `how` parameter instead of default value for better readability")
+            if isinstance(node, ast.Assign):
+                if hasattr(node.value, 'func') and hasattr(node.value.func, 'attr') and node.value.func.attr == 'merge':
+                    if node.value.func.attr == 'merge':
+                        # check for the keywords 
+                        if 'on' not in [i.arg for i in node.value.keywords] and 'left_on' not in [i.arg for i in node.value.keywords] and 'right_on' not in [i.arg for i in node.value.keywords]:
+                            self.give_suggestion(node, "Use merge() with the `on` parameter instead of relying on join() for better performance")
+                        
+                        if 'how' not in [i.arg for i in node.value.keywords]:
+                            self.give_suggestion(node, "Use merge() with the `how` parameter instead of default value for better readability")
         
     def run(self) -> List[str]:
         
         if self.is_valid_python():
-            self.check_data_read()
             self.check_import()
+            self.check_data_read()
             self.check_iter()
             self.merge_statement()
 
